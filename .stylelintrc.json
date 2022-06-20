@@ -1,0 +1,20 @@
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-styled-components", "stylelint-config-prettier"],
+  "plugins": ["stylelint-a11y"],
+  "processors": ["stylelint-processor-styled-components"],
+  "rules": {
+    "selector-type-case": [
+      "lower",
+      {
+        "ignoreTypes": ["/^\\$\\w+/"]
+      }
+    ],
+    "value-keyword-case": ["lower", {"ignoreKeywords": ["dummyValue"]}],
+    "selector-type-no-unknown": [
+      true,
+      {
+        "ignoreTypes": ["/^\\$\\w+/"]
+      }
+    ]
+  }
+}
