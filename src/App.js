@@ -6,27 +6,38 @@ import TodoItem from './components/TodoItem.js';
 
 export default function App() {
   const [todos, setTodos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     fetch('/api/todos')
       .then(response => response.json())
-      .then(todos => setTodos(todos))
+      .then(todos => {
+        setTodos(todos);
+        setIsLoading(false);
+      })
       .catch(error => console.log(error));
   }, []);
 
   return (
     <Grid>
-      <Scroller>
-        {todos.map((todo, index) => (
-          <TodoItem
-            key={todo._id}
-            description={todo.description}
-            onToggle={() => toggleTodo(index)}
-            isDone={todo.isDone}
-            id={todo._id}
-          />
+      {isLoading && <div>... Loading ...</div>}
+      {!isLoading &&
+        (todos.length ? (
+          <Scroller>
+            {todos.map((todo, index) => (
+              <TodoItem
+                key={todo._id}
+                description={todo.description}
+                onToggle={() => toggleTodo(index)}
+                isDone={todo.isDone}
+                id={todo._id}
+              />
+            ))}
+          </Scroller>
+        ) : (
+          <div>No todos. Start by adding new todos.</div>
         ))}
-      </Scroller>
       <TodoForm onCreateTodo={addTodo} />
     </Grid>
   );
