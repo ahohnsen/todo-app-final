@@ -1,37 +1,78 @@
-import {nanoid} from 'nanoid';
+import {useEffect, useState} from 'react';
 import styled from 'styled-components';
 
 import TodoForm from './components/TodoForm.js';
 import TodoItem from './components/TodoItem.js';
-import useLocalStorage from './hooks/useLocalStorage.js';
 
 export default function App() {
-  const [todos, setTodos] = useLocalStorage('My ToDos', []);
+  const [todos, setTodos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+    fetch('/api/todos')
+      .then(response => response.json())
+      .then(todos => {
+        setTodos(todos);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        setError(new Error('Oooops, something went wrong.'));
+        setIsLoading(false);
+      });
+  }, []);
 
   return (
     <Grid>
-      <Scroller>
-        {todos.map((todo, index) => (
-          <TodoItem
-            key={todo.id}
-            description={todo.description}
-            onToggle={() => toggleTodo(index)}
-            isDone={todo.isDone}
-            id={todo.id}
-          />
+      {isLoading && <div>... Loading ...</div>}
+      {error && <div>{error.message}</div>}
+      {!isLoading &&
+        (todos.length ? (
+          <Scroller>
+            {todos.map((todo, index) => (
+              <TodoItem
+                key={todo._id}
+                description={todo.description}
+                onToggle={() => toggleTodo(index)}
+                isDone={todo.isDone}
+                id={todo._id}
+              />
+            ))}
+          </Scroller>
+        ) : (
+          <div>No todos. Start by adding new todos.</div>
         ))}
-      </Scroller>
       <TodoForm onCreateTodo={addTodo} />
     </Grid>
   );
 
   function addTodo(description) {
-    setTodos([...todos, {id: nanoid(), description: description, isDone: false}]);
+    setError(null);
+    fetch('/api/todos', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({description: description}),
+    })
+      .then(response => response.json())
+      .then(todo => setTodos([...todos, todo]))
+      .catch(error => setError(new Error('Something went wrong while adding your todo. Please try again later.')));
   }
 
   function toggleTodo(index) {
+    setError(null);
     const todo = todos[index];
-    setTodos([...todos.slice(0, index), {...todo, isDone: !todo.isDone}, ...todos.slice(index + 1)]);
+    fetch('/api/todos/' + todo._id, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({isDone: !todo.isDone}),
+    })
+      .then(response => response.json())
+      .then(todo => setTodos([...todos.slice(0, index), {...todo}, ...todos.slice(index + 1)]))
+      .catch(error =>
+        setError(new Error('Ooops, something went wrong while updating your todo. Please try again later.'))
+      );
   }
 }
 

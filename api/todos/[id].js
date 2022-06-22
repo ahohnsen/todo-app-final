@@ -22,7 +22,7 @@ const enclosedHandler = async (request, response) => {
         return response.status(404).send();
       }
       todoToUpdate.description = request.body.description;
-      todoToUpdate.done = request.body.done;
+      todoToUpdate.isDone = request.body.isDone;
       const updatedTodo = await todoToUpdate.save();
       return response.status(200).json(updatedTodo);
     }
