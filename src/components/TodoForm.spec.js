@@ -41,27 +41,4 @@ describe('TodoForm', () => {
     await user.type(input, '      needs trimming     {Enter}');
     expect(callback).toHaveBeenCalledWith('needs trimming');
   });
-
-  it('does allow 100 characters', async () => {
-    const user = userEvent.setup();
-    const callback1 = jest.fn();
-    render(<TodoForm onCreateTodo={callback1} />);
-
-    const input = screen.getByLabelText('Todo description');
-    const longText = Array(100).fill('x').join('');
-    await user.type(input, longText + '{Enter}');
-    expect(callback1).toHaveBeenCalledWith(longText);
-  });
-
-  it('does not allow more than 100 characters', async () => {
-    const user = userEvent.setup();
-    const callback1 = jest.fn();
-    render(<TodoForm onCreateTodo={callback1} />);
-
-    const input = screen.getByLabelText('Todo description');
-    const longText = Array(100).fill('x').join('');
-    const tooLongText = longText + 'XXX';
-    await user.type(input, tooLongText + '{Enter}');
-    expect(callback1).toHaveBeenCalledWith(longText);
-  });
 });
