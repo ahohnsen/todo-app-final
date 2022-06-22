@@ -1,23 +1,29 @@
-import {nanoid} from 'nanoid';
+import {useEffect, useState} from 'react';
 import styled from 'styled-components';
 
 import TodoForm from './components/TodoForm.js';
 import TodoItem from './components/TodoItem.js';
-import useLocalStorage from './hooks/useLocalStorage.js';
 
 export default function App() {
-  const [todos, setTodos] = useLocalStorage('My ToDos', []);
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/todos')
+      .then(response => response.json())
+      .then(todos => setTodos(todos))
+      .catch(error => console.log(error));
+  }, []);
 
   return (
     <Grid>
       <Scroller>
         {todos.map((todo, index) => (
           <TodoItem
-            key={todo.id}
+            key={todo._id}
             description={todo.description}
             onToggle={() => toggleTodo(index)}
             isDone={todo.isDone}
-            id={todo.id}
+            id={todo._id}
           />
         ))}
       </Scroller>
@@ -26,12 +32,26 @@ export default function App() {
   );
 
   function addTodo(description) {
-    setTodos([...todos, {id: nanoid(), description: description, isDone: false}]);
+    fetch('/api/todos', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({description: description}),
+    })
+      .then(response => response.json())
+      .then(todo => setTodos([...todos, todo]))
+      .catch(error => console.log(error));
   }
 
   function toggleTodo(index) {
     const todo = todos[index];
-    setTodos([...todos.slice(0, index), {...todo, isDone: !todo.isDone}, ...todos.slice(index + 1)]);
+    fetch('/api/todos/' + todo._id, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({isDone: !todo.isDone}),
+    })
+      .then(response => response.json())
+      .then(todo => setTodos([...todos.slice(0, index), {...todo}, ...todos.slice(index + 1)]))
+      .catch(error => console.log(error));
   }
 }
 
