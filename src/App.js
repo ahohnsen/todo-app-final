@@ -1,12 +1,12 @@
 import {nanoid} from 'nanoid';
-import {useState} from 'react';
 import styled from 'styled-components';
 
 import TodoForm from './components/TodoForm.js';
 import TodoItem from './components/TodoItem.js';
+import useLocalStorage from './hooks/useLocalStorage.js';
 
 export default function App() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useLocalStorage('My ToDos', []);
 
   return (
     <Grid>
