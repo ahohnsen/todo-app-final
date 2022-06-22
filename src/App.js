@@ -1,7 +1,9 @@
+import {nanoid} from 'nanoid';
 import {useState} from 'react';
 import styled from 'styled-components';
 
 import TodoForm from './components/TodoForm.js';
+import TodoItem from './components/TodoItem.js';
 
 export default function App() {
   const [todos, setTodos] = useState([]);
@@ -10,7 +12,13 @@ export default function App() {
     <Grid>
       <Scroller>
         {todos.map((todo, index) => (
-          <TodoItem key={index}>{todo}</TodoItem>
+          <TodoItem
+            key={todo.id}
+            description={todo.description}
+            onToggle={() => toggleTodo(index)}
+            isDone={todo.isDone}
+            id={todo.id}
+          />
         ))}
       </Scroller>
       <TodoForm onCreateTodo={addTodo} />
@@ -18,7 +26,12 @@ export default function App() {
   );
 
   function addTodo(description) {
-    setTodos([...todos, description]);
+    setTodos([...todos, {id: nanoid(), description: description, isDone: false}]);
+  }
+
+  function toggleTodo(index) {
+    const todo = todos[index];
+    setTodos([...todos.slice(0, index), {...todo, isDone: !todo.isDone}, ...todos.slice(index + 1)]);
   }
 }
 
@@ -33,8 +46,4 @@ const Grid = styled.main`
 const Scroller = styled.ul`
   height: 100%;
   overflow-y: auto;
-`;
-
-const TodoItem = styled.li`
-  word-wrap: anywhere;
 `;
